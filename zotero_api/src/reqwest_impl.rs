@@ -12,7 +12,7 @@ impl ZoteroApiExecutor for http::Request<Bytes> {
     ) -> Result<T, crate::ZoteroApiError> {
         let client = reqwest::blocking::Client::new();
 
-        let res = client
+        let mut res = client
             .execute(self.try_into().unwrap())
             .map_err(|err| ZoteroApiError::RequestError(err.to_string()))?;
 
@@ -24,38 +24,42 @@ impl ZoteroApiExecutor for http::Request<Bytes> {
 
         let mut next_page = get_next_page(res.headers().clone());
 
-        let response = res
-            .json::<Value>()
-            .map_err(|err| ZoteroApiError::ParseResponseError(err.to_string()))?;
+        if next_page.is_none() {
+            let response_value = res
+                .json::<Value>()
+                .map_err(|e| ZoteroApiError::ParseResponseError(e.to_string()))?;
 
-        match next_page {
-            None => {
-                return T::deserialize(response)
-                    .map_err(|err| ZoteroApiError::ParseResponseError(err.to_string()))
-            }
-            Some(_) => {
-                let mut responses: Vec<Value> = vec![];
-                responses.push(response);
-
-                // follow pagination if any
-                while let Some(np) = next_page {
-                    let res = client
-                        .execute(zotero_api.request_uri("GET", np).try_into().unwrap())
-                        .map_err(|err| ZoteroApiError::RequestError(err.to_string()))?;
-
-                    next_page = get_next_page(res.headers().clone());
-
-                    let mut response: Vec<Value> = res
-                        .json()
-                        .map_err(|err| ZoteroApiError::ParseResponseError(err.to_string()))?;
-
-                    responses.append(&mut response);
-                }
-
-                T::deserialize(Value::Array(responses))
-                    .map_err(|err| ZoteroApiError::ParseResponseError(err.to_string()))
-            }
+            return T::deserialize(response_value)
+                .map_err(|e| ZoteroApiError::ParseResponseError(e.to_string()));
         }
+
+        let response_bytes = res
+            .bytes()
+            .map_err(|e| ZoteroApiError::ParseResponseError(e.to_string()))?;
+
+        let mut pages: Vec<Value> = serde_json::from_slice::<Vec<Value>>(&response_bytes)
+            .map_err(|e| ZoteroApiError::ParseResponseError(e.to_string()))?;
+
+        // follow pagination if any
+        while let Some(np) = next_page {
+            res = client
+                .execute(zotero_api.request_uri("GET", np).try_into().unwrap())
+                .map_err(|err| ZoteroApiError::RequestError(err.to_string()))?;
+
+            next_page = get_next_page(res.headers().clone());
+
+            let response_bytes = res
+                .bytes()
+                .map_err(|e| ZoteroApiError::ParseResponseError(e.to_string()))?;
+
+            let mut page: Vec<Value> = serde_json::from_slice::<Vec<Value>>(&response_bytes)
+                .map_err(|e| ZoteroApiError::ParseResponseError(e.to_string()))?;
+
+            pages.append(&mut page)
+        }
+
+        T::deserialize(Value::Array(pages))
+            .map_err(|err| ZoteroApiError::ParseResponseError(err.to_string()))
     }
 }
 
