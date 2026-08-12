@@ -24,7 +24,7 @@ impl ZoteroApiExecutor for http::Request<Bytes> {
 
         let mut next_page = get_next_page(res.headers().clone());
 
-        let response = res
+        let mut response = res
             .json::<Value>()
             .map_err(|err| ZoteroApiError::ParseResponseError(err.to_string()))?;
 
@@ -35,7 +35,14 @@ impl ZoteroApiExecutor for http::Request<Bytes> {
             }
             Some(_) => {
                 let mut responses: Vec<Value> = vec![];
-                responses.push(response);
+
+                let response =
+                    response
+                        .as_array_mut()
+                        .ok_or(ZoteroApiError::ParseResponseError(format!(
+                            "Expected response to be an array."
+                        )))?;
+                responses.append(response);
 
                 // follow pagination if any
                 while let Some(np) = next_page {
@@ -80,7 +87,7 @@ impl ZoteroApiAsyncExecutor for http::Request<Bytes> {
 
         let mut next_page = get_next_page(res.headers().clone());
 
-        let response = res
+        let mut response = res
             .json::<Value>()
             .await
             .map_err(|err| ZoteroApiError::ParseResponseError(err.to_string()))?;
@@ -92,7 +99,14 @@ impl ZoteroApiAsyncExecutor for http::Request<Bytes> {
             }
             Some(_) => {
                 let mut responses: Vec<Value> = vec![];
-                responses.push(response);
+
+                let response =
+                    response
+                        .as_array_mut()
+                        .ok_or(ZoteroApiError::ParseResponseError(format!(
+                            "Expected response to be an array."
+                        )))?;
+                responses.append(response);
 
                 // follow pagination if any
                 while let Some(np) = next_page {
