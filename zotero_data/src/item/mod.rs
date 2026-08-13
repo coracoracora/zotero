@@ -25,8 +25,7 @@
 
 mod item_data;
 
-use chrono::DateTime;
-use chrono::NaiveTime;
+use chrono::{DateTime, NaiveTime};
 use chrono::{Local, NaiveDate, NaiveDateTime};
 pub use item_data::ArtworkData;
 pub use item_data::ArtworkDataBuilder;
@@ -475,18 +474,751 @@ impl Item {
         };
         convert_zotero_date_str(date_str)
     }
+
+    pub fn parent_item(&self) -> Option<&str> {
+        Some(match &self.data {
+            ItemType::Attachment(d) => &d.parent_item,
+            ItemType::Note(d) => &d.parent_item,
+            _ => return None,
+        })
+    }
+
+    pub fn abstract_note(&self) -> Option<&str> {
+        Some(match &self.data {
+            ItemType::Artwork(d) => &d.abstract_note,
+            ItemType::AudioRecording(d) => &d.abstract_note,
+            ItemType::Bill(d) => &d.abstract_note,
+            ItemType::BlogPost(d) => &d.abstract_note,
+            ItemType::Book(d) => &d.abstract_note,
+            ItemType::BookSection(d) => &d.abstract_note,
+            ItemType::Case(d) => &d.abstract_note,
+            ItemType::ComputerProgram(d) => &d.abstract_note,
+            ItemType::ConferencePaper(d) => &d.abstract_note,
+            ItemType::DictionaryEntry(d) => &d.abstract_note,
+            ItemType::Document(d) => &d.abstract_note,
+            ItemType::Email(d) => &d.abstract_note,
+            ItemType::EncyclopediaArticle(d) => &d.abstract_note,
+            ItemType::Film(d) => &d.abstract_note,
+            ItemType::ForumPost(d) => &d.abstract_note,
+            ItemType::Hearing(d) => &d.abstract_note,
+            ItemType::InstantMessage(d) => &d.abstract_note,
+            ItemType::Interview(d) => &d.abstract_note,
+            ItemType::JournalArticle(d) => &d.abstract_note,
+            ItemType::Letter(d) => &d.abstract_note,
+            ItemType::MagazineArticle(d) => &d.abstract_note,
+            ItemType::Manuscript(d) => &d.abstract_note,
+            ItemType::Map(d) => &d.abstract_note,
+            ItemType::NewspaperArticle(d) => &d.abstract_note,
+            ItemType::Patent(d) => &d.abstract_note,
+            ItemType::Podcast(d) => &d.abstract_note,
+            ItemType::Presentation(d) => &d.abstract_note,
+            ItemType::RadioBroadcast(d) => &d.abstract_note,
+            ItemType::Report(d) => &d.abstract_note,
+            ItemType::Statute(d) => &d.abstract_note,
+            ItemType::Thesis(d) => &d.abstract_note,
+            ItemType::TvBroadcast(d) => &d.abstract_note,
+            ItemType::VideoRecording(d) => &d.abstract_note,
+            ItemType::Webpage(d) => &d.abstract_note,
+            _ => return None,
+        })
+    }
+
+    pub fn publication_title(&self) -> Option<&str> {
+        Some(match &self.data {
+            ItemType::JournalArticle(d) => &d.publication_title,
+            ItemType::MagazineArticle(d) => &d.publication_title,
+            ItemType::NewspaperArticle(d) => &d.publication_title,
+            _ => return None,
+        })
+    }
+
+    pub fn publisher(&self) -> Option<&str> {
+        Some(match &self.data {
+            ItemType::Book(d) => &d.publisher,
+            ItemType::BookSection(d) => &d.publisher,
+            ItemType::ConferencePaper(d) => &d.publisher,
+            ItemType::DictionaryEntry(d) => &d.publisher,
+            ItemType::Document(d) => &d.publisher,
+            ItemType::EncyclopediaArticle(d) => &d.publisher,
+            ItemType::Hearing(d) => &d.publisher,
+            ItemType::Map(d) => &d.publisher,
+            _ => return None,
+        })
+    }
+
+    pub fn place(&self) -> Option<&str> {
+        Some(match &self.data {
+            ItemType::AudioRecording(d) => &d.place,
+            ItemType::Book(d) => &d.place,
+            ItemType::BookSection(d) => &d.place,
+            ItemType::ComputerProgram(d) => &d.place,
+            ItemType::ConferencePaper(d) => &d.place,
+            ItemType::DictionaryEntry(d) => &d.place,
+            ItemType::EncyclopediaArticle(d) => &d.place,
+            ItemType::Hearing(d) => &d.place,
+            ItemType::Manuscript(d) => &d.place,
+            ItemType::Map(d) => &d.place,
+            ItemType::NewspaperArticle(d) => &d.place,
+            ItemType::Patent(d) => &d.place,
+            ItemType::Presentation(d) => &d.place,
+            ItemType::RadioBroadcast(d) => &d.place,
+            ItemType::Report(d) => &d.place,
+            ItemType::Thesis(d) => &d.place,
+            ItemType::TvBroadcast(d) => &d.place,
+            ItemType::VideoRecording(d) => &d.place,
+            _ => return None,
+        })
+    }
+
+    pub fn volume(&self) -> Option<&str> {
+        Some(match &self.data {
+            ItemType::AudioRecording(d) => &d.volume,
+            ItemType::Book(d) => &d.volume,
+            ItemType::BookSection(d) => &d.volume,
+            ItemType::ConferencePaper(d) => &d.volume,
+            ItemType::DictionaryEntry(d) => &d.volume,
+            ItemType::EncyclopediaArticle(d) => &d.volume,
+            ItemType::JournalArticle(d) => &d.volume,
+            ItemType::MagazineArticle(d) => &d.volume,
+            ItemType::VideoRecording(d) => &d.volume,
+            _ => return None,
+        })
+    }
+
+    pub fn issue(&self) -> Option<&str> {
+        Some(match &self.data {
+            ItemType::JournalArticle(d) => &d.issue,
+            ItemType::MagazineArticle(d) => &d.issue,
+            _ => return None,
+        })
+    }
+
+    pub fn section(&self) -> Option<&str> {
+        Some(match &self.data {
+            ItemType::Bill(d) => &d.section,
+            ItemType::NewspaperArticle(d) => &d.section,
+            ItemType::Statute(d) => &d.section,
+            _ => return None,
+        })
+    }
+
+    /// THe `part_number` from the underlying `data`.
+    ///
+    /// **TODO**: This is not actually wired up in any of the [ItemType]s
+    /// as far as I can tell, so this needs to be done too.
+    pub fn part_number(&self) -> Option<&str> {
+        None
+    }
+
+    /// THe `part_number` from the underlying `data`.
+    ///
+    /// **TODO**: This is not actually wired up in any of the [ItemType]s
+    /// as far as I can tell, so this needs to be done too.
+    pub fn part_title(&self) -> Option<&str> {
+        None
+    }
+
+    pub fn pages(&self) -> Option<&str> {
+        Some(match &self.data {
+            ItemType::BookSection(d) => &d.pages,
+            ItemType::ConferencePaper(d) => &d.pages,
+            ItemType::DictionaryEntry(d) => &d.pages,
+            ItemType::EncyclopediaArticle(d) => &d.pages,
+            ItemType::Hearing(d) => &d.pages,
+            ItemType::JournalArticle(d) => &d.pages,
+            ItemType::MagazineArticle(d) => &d.pages,
+            ItemType::NewspaperArticle(d) => &d.pages,
+            ItemType::Patent(d) => &d.pages,
+            ItemType::Report(d) => &d.pages,
+            ItemType::Statute(d) => &d.pages,
+            _ => return None,
+        })
+    }
+
+    pub fn series(&self) -> Option<&str> {
+        Some(match &self.data {
+            ItemType::Book(d) => &d.series,
+            ItemType::BookSection(d) => &d.series,
+            ItemType::ConferencePaper(d) => &d.series,
+            ItemType::DictionaryEntry(d) => &d.series,
+            ItemType::EncyclopediaArticle(d) => &d.series,
+            ItemType::JournalArticle(d) => &d.series,
+            _ => return None,
+        })
+    }
+
+    pub fn series_title(&self) -> Option<&str> {
+        Some(
+            match &self.data {
+                ItemType::AudioRecording(d) => &d.series_title,
+                ItemType::ComputerProgram(d) => &d.series_title,
+                ItemType::JournalArticle(d) => &d.series_title,
+                ItemType::Map(d) => &d.series_title,
+                ItemType::Podcast(d) => &d.series_title,
+                ItemType::Report(d) => &d.series_title,
+                ItemType::VideoRecording(d) => &d.series_title,
+                _ => return None,
+            }
+        )
+    }
+
+    /// The `series_text` from the underlying `data`.
+    ///
+    /// **TODO**: This is not actually wired up in any of the [ItemType]s
+    /// as far as I can tell, so this needs to be done too.
+    pub fn series_text(&self) -> Option<&str> {
+        None
+    }
+
+    /// The `journal_abbreviation` from the underlying `data`.
+    ///
+    /// **TODO**: This is not actually wired up in any of the [ItemType]s
+    /// as far as I can tell, so this needs to be done too.
+    pub fn journal_abbreviation(&self) -> Option<&str> {
+        None
+    }
+
+    /// The `citation_key` from the underlying `data`.
+    ///
+    /// **TODO**: This is not actually wired up in any of the [ItemType]s
+    /// as far as I can tell, so this needs to be done too.
+    pub fn citation_key(&self) -> Option<&str> {
+        None
+    }
+
+    pub fn url(&self) -> Option<&str> {
+        Some(
+            match &self.data {
+                ItemType::Artwork(d) => &d.url,
+                ItemType::AudioRecording(d) => &d.url,
+                ItemType::Bill(d) => &d.url,
+                ItemType::BlogPost(d) => &d.url,
+                ItemType::Book(d) => &d.url,
+                ItemType::BookSection(d) => &d.url,
+                ItemType::Case(d) => &d.url,
+                ItemType::ComputerProgram(d) => &d.url,
+                ItemType::ConferencePaper(d) => &d.url,
+                ItemType::DictionaryEntry(d) => &d.url,
+                ItemType::Document(d) => &d.url,
+                ItemType::Email(d) => &d.url,
+                ItemType::EncyclopediaArticle(d) => &d.url,
+                ItemType::Film(d) => &d.url,
+                ItemType::ForumPost(d) => &d.url,
+                ItemType::Hearing(d) => &d.url,
+                ItemType::InstantMessage(d) => &d.url,
+                ItemType::Interview(d) => &d.url,
+                ItemType::JournalArticle(d) => &d.url,
+                ItemType::Letter(d) => &d.url,
+                ItemType::MagazineArticle(d) => &d.url,
+                ItemType::Manuscript(d) => &d.url,
+                ItemType::Map(d) => &d.url,
+                ItemType::NewspaperArticle(d) => &d.url,
+                ItemType::Patent(d) => &d.url,
+                ItemType::Podcast(d) => &d.url,
+                ItemType::Presentation(d) => &d.url,
+                ItemType::RadioBroadcast(d) => &d.url,
+                ItemType::Report(d) => &d.url,
+                ItemType::Statute(d) => &d.url,
+                ItemType::Thesis(d) => &d.url,
+                ItemType::TvBroadcast(d) => &d.url,
+                ItemType::VideoRecording(d) => &d.url,
+                ItemType::Webpage(d) => &d.url,
+                ItemType::Attachment(d) => &d.url,
+                _ => return None,
+            }
+        )
+    }
+
+    pub fn access_date(&self) -> Option<DateTime<Local>> {
+        let date_str = match &self.data {
+            ItemType::Artwork(d) => &d.access_date,
+            ItemType::AudioRecording(d) => &d.access_date,
+            ItemType::Bill(d) => &d.access_date,
+            ItemType::BlogPost(d) => &d.access_date,
+            ItemType::Book(d) => &d.access_date,
+            ItemType::BookSection(d) => &d.access_date,
+            ItemType::Case(d) => &d.access_date,
+            ItemType::ComputerProgram(d) => &d.access_date,
+            ItemType::ConferencePaper(d) => &d.access_date,
+            ItemType::DictionaryEntry(d) => &d.access_date,
+            ItemType::Document(d) => &d.access_date,
+            ItemType::Email(d) => &d.access_date,
+            ItemType::EncyclopediaArticle(d) => &d.access_date,
+            ItemType::Film(d) => &d.access_date,
+            ItemType::ForumPost(d) => &d.access_date,
+            ItemType::Hearing(d) => &d.access_date,
+            ItemType::InstantMessage(d) => &d.access_date,
+            ItemType::Interview(d) => &d.access_date,
+            ItemType::JournalArticle(d) => &d.access_date,
+            ItemType::Letter(d) => &d.access_date,
+            ItemType::MagazineArticle(d) => &d.access_date,
+            ItemType::Manuscript(d) => &d.access_date,
+            ItemType::Map(d) => &d.access_date,
+            ItemType::NewspaperArticle(d) => &d.access_date,
+            ItemType::Patent(d) => &d.access_date,
+            ItemType::Podcast(d) => &d.access_date,
+            ItemType::Presentation(d) => &d.access_date,
+            ItemType::RadioBroadcast(d) => &d.access_date,
+            ItemType::Report(d) => &d.access_date,
+            ItemType::Statute(d) => &d.access_date,
+            ItemType::Thesis(d) => &d.access_date,
+            ItemType::TvBroadcast(d) => &d.access_date,
+            ItemType::VideoRecording(d) => &d.access_date,
+            ItemType::Webpage(d) => &d.access_date,
+            ItemType::Attachment(d) => &d.access_date,
+            _ => return None,
+        };
+        Some(convert_zotero_date_str(date_str))
+    }
+
+    /// The `PMID` from the underlying `data`.
+    ///
+    /// **TODO**: This is not actually wired up in any of the [ItemType]s
+    /// as far as I can tell, so this needs to be done too.
+    pub fn pmid(&self) -> Option<&str> {
+        None
+    }
+
+    /// The `PMCID` from the underlying `data`.
+    ///
+    /// **TODO**: This is not actually wired up in any of the [ItemType]s
+    /// as far as I can tell, so this needs to be done too.
+    pub fn pmcid(&self) -> Option<&str> {
+        None
+    }
+
+    pub fn issn(&self) -> Option<&str> {
+        Some(
+            match &self.data {
+                ItemType::JournalArticle(d) => &d.issn,
+                ItemType::MagazineArticle(d) => &d.issn,
+                ItemType::NewspaperArticle(d) => &d.issn,
+                _ => return None,
+            }
+        )
+    }
+
+    pub fn isbn(&self) -> Option<&str> {
+        Some(
+            match &self.data {
+                ItemType::AudioRecording(d) => &d.isbn,
+                ItemType::Book(d) => &d.isbn,
+                ItemType::BookSection(d) => &d.isbn,
+                ItemType::ComputerProgram(d) => &d.isbn,
+                ItemType::ConferencePaper(d) => &d.isbn,
+                ItemType::DictionaryEntry(d) => &d.isbn,
+                ItemType::EncyclopediaArticle(d) => &d.isbn,
+                ItemType::Map(d) => &d.isbn,
+                ItemType::VideoRecording(d) => &d.isbn,
+                _ => return None,
+            }
+        )
+    }
+
+    pub fn doi(&self) -> Option<&str> {
+        Some(
+            match &self.data {
+                ItemType::ConferencePaper(d) => &d.doi,
+                ItemType::JournalArticle(d) => &d.doi,
+                _ => return None,
+            }
+        )
+    }
+
+    pub fn archive(&self) -> Option<&str> {
+        Some(
+            match &self.data {
+                ItemType::Artwork(d) => &d.archive,
+                ItemType::AudioRecording(d) => &d.archive,
+                ItemType::Book(d) => &d.archive,
+                ItemType::BookSection(d) => &d.archive,
+                ItemType::ComputerProgram(d) => &d.archive,
+                ItemType::ConferencePaper(d) => &d.archive,
+                ItemType::DictionaryEntry(d) => &d.archive,
+                ItemType::Document(d) => &d.archive,
+                ItemType::EncyclopediaArticle(d) => &d.archive,
+                ItemType::Film(d) => &d.archive,
+                ItemType::Interview(d) => &d.archive,
+                ItemType::JournalArticle(d) => &d.archive,
+                ItemType::Letter(d) => &d.archive,
+                ItemType::MagazineArticle(d) => &d.archive,
+                ItemType::Manuscript(d) => &d.archive,
+                ItemType::Map(d) => &d.archive,
+                ItemType::NewspaperArticle(d) => &d.archive,
+                ItemType::RadioBroadcast(d) => &d.archive,
+                ItemType::Report(d) => &d.archive,
+                ItemType::Thesis(d) => &d.archive,
+                ItemType::TvBroadcast(d) => &d.archive,
+                ItemType::VideoRecording(d) => &d.archive,
+                _ => return None,
+            }
+        )
+    }
+
+    pub fn archive_location(&self) -> Option<&str> {
+        Some(
+            match &self.data {
+                ItemType::Artwork(d) => &d.archive_location,
+                ItemType::AudioRecording(d) => &d.archive_location,
+                ItemType::Book(d) => &d.archive_location,
+                ItemType::BookSection(d) => &d.archive_location,
+                ItemType::ComputerProgram(d) => &d.archive_location,
+                ItemType::ConferencePaper(d) => &d.archive_location,
+                ItemType::DictionaryEntry(d) => &d.archive_location,
+                ItemType::Document(d) => &d.archive_location,
+                ItemType::EncyclopediaArticle(d) => &d.archive_location,
+                ItemType::Film(d) => &d.archive_location,
+                ItemType::Interview(d) => &d.archive_location,
+                ItemType::JournalArticle(d) => &d.archive_location,
+                ItemType::Letter(d) => &d.archive_location,
+                ItemType::MagazineArticle(d) => &d.archive_location,
+                ItemType::Manuscript(d) => &d.archive_location,
+                ItemType::Map(d) => &d.archive_location,
+                ItemType::NewspaperArticle(d) => &d.archive_location,
+                ItemType::RadioBroadcast(d) => &d.archive_location,
+                ItemType::Report(d) => &d.archive_location,
+                ItemType::Thesis(d) => &d.archive_location,
+                ItemType::TvBroadcast(d) => &d.archive_location,
+                ItemType::VideoRecording(d) => &d.archive_location,
+                _ => return None,
+            }
+        )
+    }
+
+    pub fn short_title(&self) -> Option<&str> {
+        Some(
+            match &self.data {
+                ItemType::Artwork(d) => &d.short_title,
+                ItemType::AudioRecording(d) => &d.short_title,
+                ItemType::Bill(d) => &d.short_title,
+                ItemType::BlogPost(d) => &d.short_title,
+                ItemType::Book(d) => &d.short_title,
+                ItemType::BookSection(d) => &d.short_title,
+                ItemType::ComputerProgram(d) => &d.short_title,
+                ItemType::ConferencePaper(d) => &d.short_title,
+                ItemType::DictionaryEntry(d) => &d.short_title,
+                ItemType::Document(d) => &d.short_title,
+                ItemType::EncyclopediaArticle(d) => &d.short_title,
+                ItemType::Film(d) => &d.short_title,
+                ItemType::ForumPost(d) => &d.short_title,
+                ItemType::Hearing(d) => &d.short_title,
+                ItemType::InstantMessage(d) => &d.short_title,
+                ItemType::Interview(d) => &d.short_title,
+                ItemType::JournalArticle(d) => &d.short_title,
+                ItemType::Letter(d) => &d.short_title,
+                ItemType::MagazineArticle(d) => &d.short_title,
+                ItemType::Manuscript(d) => &d.short_title,
+                ItemType::Map(d) => &d.short_title,
+                ItemType::NewspaperArticle(d) => &d.short_title,
+                ItemType::Patent(d) => &d.short_title,
+                ItemType::Podcast(d) => &d.short_title,
+                ItemType::Presentation(d) => &d.short_title,
+                ItemType::RadioBroadcast(d) => &d.short_title,
+                ItemType::Report(d) => &d.short_title,
+                ItemType::Thesis(d) => &d.short_title,
+                ItemType::TvBroadcast(d) => &d.short_title,
+                ItemType::VideoRecording(d) => &d.short_title,
+                ItemType::Webpage(d) => &d.short_title,
+                _ => return None,
+            }
+        )
+    }
+
+    pub fn language(&self) -> Option<&str> {
+        Some(
+            match &self.data {
+                ItemType::Artwork(d) => &d.language,
+                ItemType::AudioRecording(d) => &d.language,
+                ItemType::Bill(d) => &d.language,
+                ItemType::BlogPost(d) => &d.language,
+                ItemType::Book(d) => &d.language,
+                ItemType::BookSection(d) => &d.language,
+                ItemType::Case(d) => &d.language,
+                ItemType::ConferencePaper(d) => &d.language,
+                ItemType::DictionaryEntry(d) => &d.language,
+                ItemType::Document(d) => &d.language,
+                ItemType::Email(d) => &d.language,
+                ItemType::EncyclopediaArticle(d) => &d.language,
+                ItemType::Film(d) => &d.language,
+                ItemType::ForumPost(d) => &d.language,
+                ItemType::Hearing(d) => &d.language,
+                ItemType::InstantMessage(d) => &d.language,
+                ItemType::Interview(d) => &d.language,
+                ItemType::JournalArticle(d) => &d.language,
+                ItemType::Letter(d) => &d.language,
+                ItemType::MagazineArticle(d) => &d.language,
+                ItemType::Manuscript(d) => &d.language,
+                ItemType::Map(d) => &d.language,
+                ItemType::NewspaperArticle(d) => &d.language,
+                ItemType::Patent(d) => &d.language,
+                ItemType::Podcast(d) => &d.language,
+                ItemType::Presentation(d) => &d.language,
+                ItemType::RadioBroadcast(d) => &d.language,
+                ItemType::Report(d) => &d.language,
+                ItemType::Statute(d) => &d.language,
+                ItemType::Thesis(d) => &d.language,
+                ItemType::TvBroadcast(d) => &d.language,
+                ItemType::VideoRecording(d) => &d.language,
+                ItemType::Webpage(d) => &d.language,
+                _ => return None,
+            }
+        )
+    }
+
+    pub fn library_catalog(&self) -> Option<&str> {
+        Some(
+            match &self.data {
+                ItemType::Artwork(d) => &d.library_catalog,
+                ItemType::AudioRecording(d) => &d.library_catalog,
+                ItemType::Book(d) => &d.library_catalog,
+                ItemType::BookSection(d) => &d.library_catalog,
+                ItemType::ComputerProgram(d) => &d.library_catalog,
+                ItemType::ConferencePaper(d) => &d.library_catalog,
+                ItemType::DictionaryEntry(d) => &d.library_catalog,
+                ItemType::Document(d) => &d.library_catalog,
+                ItemType::EncyclopediaArticle(d) => &d.library_catalog,
+                ItemType::Film(d) => &d.library_catalog,
+                ItemType::Interview(d) => &d.library_catalog,
+                ItemType::JournalArticle(d) => &d.library_catalog,
+                ItemType::Letter(d) => &d.library_catalog,
+                ItemType::MagazineArticle(d) => &d.library_catalog,
+                ItemType::Manuscript(d) => &d.library_catalog,
+                ItemType::Map(d) => &d.library_catalog,
+                ItemType::NewspaperArticle(d) => &d.library_catalog,
+                ItemType::RadioBroadcast(d) => &d.library_catalog,
+                ItemType::Report(d) => &d.library_catalog,
+                ItemType::Thesis(d) => &d.library_catalog,
+                ItemType::TvBroadcast(d) => &d.library_catalog,
+                ItemType::VideoRecording(d) => &d.library_catalog,
+                _ => return None,
+            }
+        )
+    }
+
+    pub fn call_number(&self) -> Option<&str> {
+        Some(
+            match &self.data {
+                ItemType::Artwork(d) => &d.call_number,
+                ItemType::AudioRecording(d) => &d.call_number,
+                ItemType::Book(d) => &d.call_number,
+                ItemType::BookSection(d) => &d.call_number,
+                ItemType::ComputerProgram(d) => &d.call_number,
+                ItemType::ConferencePaper(d) => &d.call_number,
+                ItemType::DictionaryEntry(d) => &d.call_number,
+                ItemType::Document(d) => &d.call_number,
+                ItemType::EncyclopediaArticle(d) => &d.call_number,
+                ItemType::Film(d) => &d.call_number,
+                ItemType::Interview(d) => &d.call_number,
+                ItemType::JournalArticle(d) => &d.call_number,
+                ItemType::Letter(d) => &d.call_number,
+                ItemType::MagazineArticle(d) => &d.call_number,
+                ItemType::Manuscript(d) => &d.call_number,
+                ItemType::Map(d) => &d.call_number,
+                ItemType::NewspaperArticle(d) => &d.call_number,
+                ItemType::RadioBroadcast(d) => &d.call_number,
+                ItemType::Report(d) => &d.call_number,
+                ItemType::Thesis(d) => &d.call_number,
+                ItemType::TvBroadcast(d) => &d.call_number,
+                ItemType::VideoRecording(d) => &d.call_number,
+                _ => return None,
+            }
+        )
+    }
+
+    pub fn rights(&self) -> Option<&str> {
+        Some(
+            match &self.data {
+                ItemType::Artwork(d) => &d.rights,
+                ItemType::AudioRecording(d) => &d.rights,
+                ItemType::Bill(d) => &d.rights,
+                ItemType::BlogPost(d) => &d.rights,
+                ItemType::Book(d) => &d.rights,
+                ItemType::BookSection(d) => &d.rights,
+                ItemType::Case(d) => &d.rights,
+                ItemType::ComputerProgram(d) => &d.rights,
+                ItemType::ConferencePaper(d) => &d.rights,
+                ItemType::DictionaryEntry(d) => &d.rights,
+                ItemType::Document(d) => &d.rights,
+                ItemType::Email(d) => &d.rights,
+                ItemType::EncyclopediaArticle(d) => &d.rights,
+                ItemType::Film(d) => &d.rights,
+                ItemType::ForumPost(d) => &d.rights,
+                ItemType::Hearing(d) => &d.rights,
+                ItemType::InstantMessage(d) => &d.rights,
+                ItemType::Interview(d) => &d.rights,
+                ItemType::JournalArticle(d) => &d.rights,
+                ItemType::Letter(d) => &d.rights,
+                ItemType::MagazineArticle(d) => &d.rights,
+                ItemType::Manuscript(d) => &d.rights,
+                ItemType::Map(d) => &d.rights,
+                ItemType::NewspaperArticle(d) => &d.rights,
+                ItemType::Patent(d) => &d.rights,
+                ItemType::Podcast(d) => &d.rights,
+                ItemType::Presentation(d) => &d.rights,
+                ItemType::RadioBroadcast(d) => &d.rights,
+                ItemType::Report(d) => &d.rights,
+                ItemType::Statute(d) => &d.rights,
+                ItemType::Thesis(d) => &d.rights,
+                ItemType::TvBroadcast(d) => &d.rights,
+                ItemType::VideoRecording(d) => &d.rights,
+                ItemType::Webpage(d) => &d.rights,
+                _ => return None,
+            }
+        )
+    }
+
+    pub fn extra(&self) -> Option<&str> {
+        Some(
+            match &self.data {
+                ItemType::Artwork(d) => &d.extra,
+                ItemType::AudioRecording(d) => &d.extra,
+                ItemType::Bill(d) => &d.extra,
+                ItemType::BlogPost(d) => &d.extra,
+                ItemType::Book(d) => &d.extra,
+                ItemType::BookSection(d) => &d.extra,
+                ItemType::Case(d) => &d.extra,
+                ItemType::ComputerProgram(d) => &d.extra,
+                ItemType::ConferencePaper(d) => &d.extra,
+                ItemType::DictionaryEntry(d) => &d.extra,
+                ItemType::Document(d) => &d.extra,
+                ItemType::Email(d) => &d.extra,
+                ItemType::EncyclopediaArticle(d) => &d.extra,
+                ItemType::Film(d) => &d.extra,
+                ItemType::ForumPost(d) => &d.extra,
+                ItemType::Hearing(d) => &d.extra,
+                ItemType::InstantMessage(d) => &d.extra,
+                ItemType::Interview(d) => &d.extra,
+                ItemType::JournalArticle(d) => &d.extra,
+                ItemType::Letter(d) => &d.extra,
+                ItemType::MagazineArticle(d) => &d.extra,
+                ItemType::Manuscript(d) => &d.extra,
+                ItemType::Map(d) => &d.extra,
+                ItemType::NewspaperArticle(d) => &d.extra,
+                ItemType::Patent(d) => &d.extra,
+                ItemType::Podcast(d) => &d.extra,
+                ItemType::Presentation(d) => &d.extra,
+                ItemType::RadioBroadcast(d) => &d.extra,
+                ItemType::Report(d) => &d.extra,
+                ItemType::Statute(d) => &d.extra,
+                ItemType::Thesis(d) => &d.extra,
+                ItemType::TvBroadcast(d) => &d.extra,
+                ItemType::VideoRecording(d) => &d.extra,
+                ItemType::Webpage(d) => &d.extra,
+                _ => return None,
+            }
+        )
+    }
+
+    pub fn note(&self) -> Option<&str> {
+        Some(match &self.data {
+            ItemType::Attachment(d) => &d.note,
+            ItemType::Note(d) => &d.note,
+            _ => return None,
+        })
+    }
+
+    pub fn date_added(&self) -> DateTime<Local> {
+        let date_str = match &self.data {
+            ItemType::Artwork(d) => &d.date_added,
+            ItemType::AudioRecording(d) => &d.date_added,
+            ItemType::Bill(d) => &d.date_added,
+            ItemType::BlogPost(d) => &d.date_added,
+            ItemType::Book(d) => &d.date_added,
+            ItemType::BookSection(d) => &d.date_added,
+            ItemType::Case(d) => &d.date_added,
+            ItemType::ComputerProgram(d) => &d.date_added,
+            ItemType::ConferencePaper(d) => &d.date_added,
+            ItemType::DictionaryEntry(d) => &d.date_added,
+            ItemType::Document(d) => &d.date_added,
+            ItemType::Email(d) => &d.date_added,
+            ItemType::EncyclopediaArticle(d) => &d.date_added,
+            ItemType::Film(d) => &d.date_added,
+            ItemType::ForumPost(d) => &d.date_added,
+            ItemType::Hearing(d) => &d.date_added,
+            ItemType::InstantMessage(d) => &d.date_added,
+            ItemType::Interview(d) => &d.date_added,
+            ItemType::JournalArticle(d) => &d.date_added,
+            ItemType::Letter(d) => &d.date_added,
+            ItemType::MagazineArticle(d) => &d.date_added,
+            ItemType::Manuscript(d) => &d.date_added,
+            ItemType::Map(d) => &d.date_added,
+            ItemType::NewspaperArticle(d) => &d.date_added,
+            ItemType::Patent(d) => &d.date_added,
+            ItemType::Podcast(d) => &d.date_added,
+            ItemType::Presentation(d) => &d.date_added,
+            ItemType::RadioBroadcast(d) => &d.date_added,
+            ItemType::Report(d) => &d.date_added,
+            ItemType::Statute(d) => &d.date_added,
+            ItemType::Thesis(d) => &d.date_added,
+            ItemType::TvBroadcast(d) => &d.date_added,
+            ItemType::VideoRecording(d) => &d.date_added,
+            ItemType::Webpage(d) => &d.date_added,
+            ItemType::Attachment(d) => &d.date_added,
+            ItemType::Note(d) => &d.date_added,
+        };
+        convert_zotero_date_str(date_str)
+    }
+
+    pub fn date_modified(&self) -> Option<DateTime<Local>> {
+        let date_str = match &self.data {
+            ItemType::Artwork(d) => &d.date_modified,
+            ItemType::AudioRecording(d) => &d.date_modified,
+            ItemType::Bill(d) => &d.date_modified,
+            ItemType::BlogPost(d) => &d.date_modified,
+            ItemType::Book(d) => &d.date_modified,
+            ItemType::BookSection(d) => &d.date_modified,
+            ItemType::Case(d) => &d.date_modified,
+            ItemType::ComputerProgram(d) => &d.date_modified,
+            ItemType::ConferencePaper(d) => &d.date_modified,
+            ItemType::DictionaryEntry(d) => &d.date_modified,
+            ItemType::Document(d) => &d.date_modified,
+            ItemType::Email(d) => &d.date_modified,
+            ItemType::EncyclopediaArticle(d) => &d.date_modified,
+            ItemType::Film(d) => &d.date_modified,
+            ItemType::ForumPost(d) => &d.date_modified,
+            ItemType::Hearing(d) => &d.date_modified,
+            ItemType::InstantMessage(d) => &d.date_modified,
+            ItemType::Interview(d) => &d.date_modified,
+            ItemType::JournalArticle(d) => &d.date_modified,
+            ItemType::Letter(d) => &d.date_modified,
+            ItemType::MagazineArticle(d) => &d.date_modified,
+            ItemType::Manuscript(d) => &d.date_modified,
+            ItemType::Map(d) => &d.date_modified,
+            ItemType::NewspaperArticle(d) => &d.date_modified,
+            ItemType::Patent(d) => &d.date_modified,
+            ItemType::Podcast(d) => &d.date_modified,
+            ItemType::Presentation(d) => &d.date_modified,
+            ItemType::RadioBroadcast(d) => &d.date_modified,
+            ItemType::Report(d) => &d.date_modified,
+            ItemType::Statute(d) => &d.date_modified,
+            ItemType::Thesis(d) => &d.date_modified,
+            ItemType::TvBroadcast(d) => &d.date_modified,
+            ItemType::VideoRecording(d) => &d.date_modified,
+            ItemType::Webpage(d) => &d.date_modified,
+            ItemType::Note(d) => &d.date_modified,
+            // TODO: Odd inconsistency in the underlying.
+            ItemType::Attachment(d) => {
+                // special acrobatics
+                return d.date_modified.as_ref().map(convert_zotero_date_str);
+            }
+        };
+        Some(convert_zotero_date_str(date_str))
+    }
 }
 
 static DATE_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"(\d{4})-(\d{2})-(\d{2})").unwrap());
 
 static FORMATTER_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"(\d{2})/(\d{4})").unwrap());
 
-fn convert_zotero_date_str(date_str: &str) -> DateTime<Local> {
+fn convert_zotero_date_str<D: AsRef<str>>(date_str: D) -> DateTime<Local> {
+    let date_str = date_str.as_ref();
     let date_captures = DATE_REGEX.captures(date_str);
 
     let formatter_captures = FORMATTER_REGEX.captures(date_str);
 
-    let expanded_date = if let Some(captures) = date_captures {
+    let expanded_date = if let Ok(d) = DateTime::parse_from_rfc3339(date_str) {
+        d.naive_local()
+    } else if let Some(captures) = date_captures {
         // Date is in the "YYYY-MM-DD" format
         let year = captures[1].parse::<i32>().unwrap();
         let month = captures[2].parse::<u32>().unwrap();
