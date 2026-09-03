@@ -31,8 +31,7 @@ pub struct AttachmentData {
     pub mtime: Option<i64>,
     #[serde(skip_serializing_if = "String::is_empty", default)]
     pub note: String,
-    #[serde(skip_serializing_if = "String::is_empty", default)]
-    pub parent_item: String,
+    pub parent_item: Option<String>,
     pub relations: HashMap<String, String>,
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub collection: Option<Vec<String>>,
