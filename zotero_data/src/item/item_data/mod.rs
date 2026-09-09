@@ -1,5 +1,8 @@
 //! A module containing all Zotero document's type and their associated fields.
 
+mod annotation;
+pub use annotation::AnnotationData;
+pub use annotation::AnnotationDataBuilder;
 mod artwork;
 pub use artwork::ArtworkData;
 pub use artwork::ArtworkDataBuilder;
