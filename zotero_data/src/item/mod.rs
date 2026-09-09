@@ -1278,18 +1278,43 @@ fn convert_zotero_date_str<D: AsRef<str>>(date_str: D) -> DateTime<Local> {
 pub struct Creator {
     #[serde(alias = "creatorType")]
     pub creator_type: String,
-    #[serde(alias = "firstName")]
+
+    // It's possible for the Creator object to have just a `name`
+    // rather than a `firstName` and `lastName`, for example when
+    // a company is credited as the creator.
+    #[serde(alias = "firstName", skip_serializing_if = "String::is_empty", default)]
     pub first_name: String,
-    #[serde(alias = "lastName")]
+    #[serde(alias = "lastName", skip_serializing_if = "String::is_empty", default)]
     pub last_name: String,
+    #[serde(skip_serializing_if = "String::is_empty", default)]
+    pub name: String,
 }
 
 impl Creator {
     pub fn full_name(&self) -> String {
-        format!("{} {}", self.first_name, self.last_name)
+        let mut comps = vec![];
+        if !self.first_name.is_empty() {
+            comps.push(self.first_name.clone())
+        }
+        if !self.last_name.is_empty() {
+            comps.push(self.last_name.clone())
+        }
+        if !comps.is_empty() {
+            return comps.join(" ");
+        }
+
+        if !self.name.is_empty() {
+            return self.name.to_string();
+        }
+
+        "Unnamed".to_string()
     }
 
     pub fn short_name(&self) -> String {
+        if !self.name.is_empty() {
+            return self.name.to_string();
+        }
+
         match self.first_name.chars().next() {
             Some(first_initial) => format!("{}. {}", first_initial, self.last_name),
             None => self.last_name.to_string(),
@@ -3195,13 +3220,15 @@ mod test_item_deserialization {
             creator_type: "author".into(),
             first_name: "John".into(),
             last_name: "Doe".into(),
+            name: "John Doe".into(),
         };
 
         let input = r#"
         {
             "creatorType": "author",
             "firstName": "John",
-            "lastName": "Doe"
+            "lastName": "Doe",
+            "name": "John Doe"
         }
         "#;
 
