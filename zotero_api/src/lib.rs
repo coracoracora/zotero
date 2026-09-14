@@ -75,6 +75,8 @@ pub enum ZoteroApiError {
     RequestError(String),
     #[error("Parse Response Error: {0}")]
     ParseResponseError(String),
+    #[error("Deserialize Response Error: {msg}")]
+    DeserializeResponseError { msg: String, value: Value },
 }
 
 pub trait ZoteroApiExecutor {
