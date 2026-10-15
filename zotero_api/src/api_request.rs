@@ -1,5 +1,8 @@
 use bytes::Bytes;
-use http::{header::HeaderValue, header::AUTHORIZATION, Request};
+use http::{
+    header::{HeaderValue, AUTHORIZATION},
+    Method, Request,
+};
 use serde::Serialize;
 use url::form_urlencoded::byte_serialize;
 
@@ -37,6 +40,32 @@ pub trait ZoteroApi<'a> {
                 None => Vec::new(),
             }))
             .unwrap()
+    }
+
+    /// Convert the given request to a HEAD request.
+    ///
+    /// Given a method on ZoteroApi, convert it to a `HEAD` request that is suitable
+    /// for passing to `<Request as ZoteroApiAsyncExecutor>::fetch_headers()`.
+    ///
+    /// ```no_run
+    /// # use zotero_api::{
+    /// #     Zotero, 
+    /// #     ZoteroApi, 
+    /// #     LAST_MODIFIED_VERSION, 
+    /// #     ZoteroApiExecutor as _
+    /// # };
+    /// let zotero_api = Zotero::set_group("12345678", None);
+    /// let req = zotero_api.as_head_request(ZoteroApi::get_items, None);
+    /// let res = req.fetch_headers(Some(vec![LAST_MODIFIED_VERSION]));
+    /// ```
+    fn as_head_request<I: Into<Option<&'a str>>>(
+        &self,
+        func: impl FnOnce(&Self, I) -> Request<Bytes>,
+        extra_params: I,
+    ) -> Request<Bytes> {
+        let mut request = func(self, extra_params);
+        *request.method_mut() = Method::HEAD;
+        request
     }
 
     /// Generate Api request to retrieve key information.
@@ -198,7 +227,7 @@ pub trait ZoteroApi<'a> {
         let params = format!("/collection/{}/items/{}", collection_id, item_id);
         self.request::<_, ()>("GET", params, extra_params, None)
     }
-    
+
     /// Generate Api request to retrieve a group by id.
     /// ```no_run
     /// # use zotero_api::{Zotero, ZoteroApi};
