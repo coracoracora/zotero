@@ -59,12 +59,13 @@ mod consts;
 mod reqwest_impl;
 
 use async_trait::async_trait;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use thiserror::Error;
 
 pub use crate::api_request::ZoteroApi;
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, Serialize)]
 pub enum ZoteroApiError {
     #[error("Error generating Http request: {0}")]
     RequestCreationError(String),
@@ -74,6 +75,8 @@ pub enum ZoteroApiError {
     RequestError(String),
     #[error("Parse Response Error: {0}")]
     ParseResponseError(String),
+    #[error("Deserialize Response Error: {msg}")]
+    DeserializeResponseError { msg: String, value: Value },
 }
 
 pub trait ZoteroApiExecutor {

@@ -183,7 +183,7 @@ pub trait ZoteroApi<'a> {
         self.request::<_, ()>("GET", params, extra_params, None)
     }
 
-    /// Generate Api request to retreive top-level items for a given collection
+    /// Generate Api request to retrieve top-level items for a given collection
     /// ```no_run
     /// # use zotero_api::{Zotero, ZoteroApi};
     /// let z = Zotero::set_user("123456789", "bZARysJ579K5SdmYuaAJ");
@@ -196,6 +196,21 @@ pub trait ZoteroApi<'a> {
         extra_params: I,
     ) -> Request<Bytes> {
         let params = format!("/collection/{}/items/{}", collection_id, item_id);
+        self.request::<_, ()>("GET", params, extra_params, None)
+    }
+    
+    /// Generate Api request to retrieve a group by id.
+    /// ```no_run
+    /// # use zotero_api::{Zotero, ZoteroApi};
+    /// let z = Zotero::set_user("123456789", "bZARysJ579K5SdmYuaAJ");
+    /// let group_request = z.get_group("6608545", None);
+    /// ```
+    fn get_group<I: Into<Option<&'a str>>>(
+        &self,
+        group_id: &'a str,
+        extra_params: I,
+    ) -> Request<Bytes> {
+        let params = format!("/groups/{}", group_id);
         self.request::<_, ()>("GET", params, extra_params, None)
     }
 

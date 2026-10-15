@@ -21,8 +21,7 @@ pub struct NoteData {
     #[builder(setter(skip))]
     #[serde(skip_serializing, default = "note_title")]
     pub title: String,
-    #[serde(skip_serializing_if = "String::is_empty", default)]
-    pub parent_item: String,
+    pub parent_item: Option<String>,
     #[builder(setter(skip))]
     #[serde(default = "default_document_type")]
     pub item_type: String,

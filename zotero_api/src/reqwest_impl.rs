@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use async_trait::async_trait;
 use bytes::Bytes;
 use hyperx::header::{Link, RelationType};
@@ -24,18 +26,32 @@ impl ZoteroApiExecutor for http::Request<Bytes> {
 
         let mut next_page = get_next_page(res.headers().clone());
 
-        let response = res
+        let mut response = res
             .json::<Value>()
             .map_err(|err| ZoteroApiError::ParseResponseError(err.to_string()))?;
 
         match next_page {
             None => {
-                return T::deserialize(response)
-                    .map_err(|err| ZoteroApiError::ParseResponseError(err.to_string()))
+                let response = Rc::new(response);
+                let err_response = Rc::clone(&response);
+
+                T::deserialize(Rc::unwrap_or_clone(response)).map_err(|err| {
+                    ZoteroApiError::DeserializeResponseError {
+                        msg: err.to_string(),
+                        value: Rc::unwrap_or_clone(err_response),
+                    }
+                })
             }
             Some(_) => {
                 let mut responses: Vec<Value> = vec![];
-                responses.push(response);
+
+                let response =
+                    response
+                        .as_array_mut()
+                        .ok_or(ZoteroApiError::ParseResponseError(format!(
+                            "Expected response to be an array."
+                        )))?;
+                responses.append(response);
 
                 // follow pagination if any
                 while let Some(np) = next_page {
@@ -52,8 +68,15 @@ impl ZoteroApiExecutor for http::Request<Bytes> {
                     responses.append(&mut response);
                 }
 
-                T::deserialize(Value::Array(responses))
-                    .map_err(|err| ZoteroApiError::ParseResponseError(err.to_string()))
+                let responses = Rc::new(Value::Array(responses));
+                let err_responses = Rc::clone(&responses);
+
+                T::deserialize(Rc::unwrap_or_clone(responses)).map_err(|err| {
+                    ZoteroApiError::DeserializeResponseError {
+                        msg: format!("{err:?}"),
+                        value: Rc::unwrap_or_clone(err_responses),
+                    }
+                })
             }
         }
     }
@@ -80,19 +103,34 @@ impl ZoteroApiAsyncExecutor for http::Request<Bytes> {
 
         let mut next_page = get_next_page(res.headers().clone());
 
-        let response = res
+        let mut response = res
             .json::<Value>()
             .await
             .map_err(|err| ZoteroApiError::ParseResponseError(err.to_string()))?;
 
         match next_page {
             None => {
-                return T::deserialize(response)
-                    .map_err(|err| ZoteroApiError::ParseResponseError(err.to_string()))
+                let response = Rc::new(response);
+                let err_response = Rc::clone(&response);
+
+                T::deserialize(Rc::unwrap_or_clone(response)).map_err(|err| {
+                    ZoteroApiError::DeserializeResponseError {
+                        msg: err.to_string(),
+                        value: Rc::unwrap_or_clone(err_response),
+                    }
+                })
             }
+
             Some(_) => {
                 let mut responses: Vec<Value> = vec![];
-                responses.push(response);
+
+                let response =
+                    response
+                        .as_array_mut()
+                        .ok_or(ZoteroApiError::ParseResponseError(format!(
+                            "Expected response to be an array."
+                        )))?;
+                responses.append(response);
 
                 // follow pagination if any
                 while let Some(np) = next_page {
@@ -111,8 +149,15 @@ impl ZoteroApiAsyncExecutor for http::Request<Bytes> {
                     responses.append(&mut response);
                 }
 
-                T::deserialize(Value::Array(responses))
-                    .map_err(|err| ZoteroApiError::ParseResponseError(err.to_string()))
+                let responses = Rc::new(Value::Array(responses));
+                let err_responses = Rc::clone(&responses);
+
+                T::deserialize(Rc::unwrap_or_clone(responses)).map_err(|err| {
+                    ZoteroApiError::DeserializeResponseError {
+                        msg: format!("{err:?}"),
+                        value: Rc::unwrap_or_clone(err_responses),
+                    }
+                })
             }
         }
     }
