@@ -2,12 +2,51 @@ use std::rc::Rc;
 
 use async_trait::async_trait;
 use bytes::Bytes;
+use http::{HeaderMap, HeaderName, HeaderValue};
 use hyperx::header::{Link, RelationType};
 use serde_json::Value;
 
 use crate::{ZoteroApiAsyncExecutor, ZoteroApiError, ZoteroApiExecutor};
 
 impl ZoteroApiExecutor for http::Request<Bytes> {
+    fn fetch_headers<I>(self, query: Option<I>) -> Result<HeaderMap, crate::ZoteroApiError>
+    where
+        I: IntoIterator<Item = HeaderName>,
+    {
+        let client = reqwest::blocking::Client::new();
+
+        let res = client
+            .execute(self.try_into().unwrap())
+            .map_err(|err| ZoteroApiError::RequestError(err.to_string()))?;
+
+        if res.status().as_u16() == 403 {
+            return Err(ZoteroApiError::AuthenticationError(
+                res.text().unwrap_or("".to_string()),
+            ));
+        }
+
+        if let Some(query) = query {
+            let headers = res.headers();
+            let ret = query.into_iter().fold(HeaderMap::new(), |mut curr, nxt| {
+                if let Some(val) = headers.get(nxt.clone()) {
+                    curr.insert(nxt, val.to_owned());
+                }
+                curr
+            });
+            Ok(ret)
+        } else {
+            Ok(res.headers().clone())
+        }
+    }
+
+    fn fetch_header(
+        self,
+        header_name: HeaderName,
+    ) -> Result<Option<HeaderValue>, crate::ZoteroApiError> {
+        <Self as ZoteroApiExecutor>::fetch_headers(self, Some(vec![header_name.clone()]))
+            .and_then(|m| Ok(m.get(header_name).map(ToOwned::to_owned)))
+    }
+
     fn execute<'a, T: serde::Deserialize<'a>, Z: crate::ZoteroApi<'a>>(
         self,
         zotero_api: &Z,
@@ -48,9 +87,9 @@ impl ZoteroApiExecutor for http::Request<Bytes> {
                 let response =
                     response
                         .as_array_mut()
-                        .ok_or(ZoteroApiError::ParseResponseError(format!(
-                            "Expected response to be an array."
-                        )))?;
+                        .ok_or(ZoteroApiError::ParseResponseError(
+                            "Expected response to be an array.".to_string(),
+                        ))?;
                 responses.append(response);
 
                 // follow pagination if any
@@ -84,6 +123,46 @@ impl ZoteroApiExecutor for http::Request<Bytes> {
 
 #[async_trait]
 impl ZoteroApiAsyncExecutor for http::Request<Bytes> {
+    async fn fetch_headers<I>(self, query: Option<I>) -> Result<HeaderMap, crate::ZoteroApiError>
+    where
+        I: IntoIterator<Item = HeaderName> + Send,
+    {
+        let client = reqwest::Client::new();
+
+        let res = client
+            .execute(self.try_into().unwrap())
+            .await
+            .map_err(|err| ZoteroApiError::RequestError(err.to_string()))?;
+
+        if res.status().as_u16() == 403 {
+            return Err(ZoteroApiError::AuthenticationError(
+                res.text().await.unwrap_or("".to_string()),
+            ));
+        }
+
+        if let Some(query) = query {
+            let headers = res.headers();
+            let ret = query.into_iter().fold(HeaderMap::new(), |mut curr, nxt| {
+                if let Some(val) = headers.get(nxt.clone()) {
+                    curr.insert(nxt, val.to_owned());
+                }
+                curr
+            });
+            Ok(ret)
+        } else {
+            Ok(res.headers().clone())
+        }
+    }
+
+    async fn fetch_header(
+        self,
+        header_name: HeaderName,
+    ) -> Result<Option<HeaderValue>, crate::ZoteroApiError> {
+        <Self as ZoteroApiAsyncExecutor>::fetch_headers(self, Some(vec![header_name.clone()]))
+            .await
+            .and_then(|m| Ok(m.get(header_name).map(ToOwned::to_owned)))
+    }
+
     async fn execute<'a, T: serde::Deserialize<'a>, Z: crate::ZoteroApi<'a> + std::marker::Sync>(
         self,
         zotero_api: &Z,
@@ -127,9 +206,9 @@ impl ZoteroApiAsyncExecutor for http::Request<Bytes> {
                 let response =
                     response
                         .as_array_mut()
-                        .ok_or(ZoteroApiError::ParseResponseError(format!(
-                            "Expected response to be an array."
-                        )))?;
+                        .ok_or(ZoteroApiError::ParseResponseError(
+                            "Expected response to be an array.".to_string(),
+                        ))?;
                 responses.append(response);
 
                 // follow pagination if any
@@ -176,7 +255,7 @@ fn get_next_page(headers: reqwest::header::HeaderMap) -> Option<String> {
                     .find(|link_value| {
                         link_value
                             .rel()
-                            .map_or(false, |rel| rel.contains(&RelationType::Next))
+                            .is_some_and(|rel| rel.contains(&RelationType::Next))
                     })
                     .map(|link_value| link_value.link().to_string())
             })

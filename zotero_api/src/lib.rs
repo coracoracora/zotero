@@ -59,6 +59,7 @@ mod consts;
 mod reqwest_impl;
 
 use async_trait::async_trait;
+use http::{HeaderMap, HeaderName, HeaderValue};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use thiserror::Error;
@@ -79,7 +80,48 @@ pub enum ZoteroApiError {
     DeserializeResponseError { msg: String, value: Value },
 }
 
+/// The
+/// [`if-modified-since-version`](https://www.zotero.org/support/dev/web_api/v3/syncing#if-modified-since-version)
+/// request header can be used to efficiently check for new data. If
+/// `if-modified-since-version: <libraryVersion>` is passed with a
+/// multi-object read request and data has not changed in the library since
+/// the specified version, the API will return `304 Not Modified`. If
+/// `if-modified-since-version: <objectVersion>` is passed with a
+/// single-object read request, a `304 Not Modified` will be returned if the
+/// individual object has not changed.
+pub const IF_MODIFIED_SINCE_VERSION: HeaderName =
+    HeaderName::from_static("if-modified-since-version");
+
+/// The
+/// [`last-modified-version`](https://www.zotero.org/support/dev/web_api/v3/syncing#last-modified-version)
+/// response header indicates the current version of either a library (for
+/// multi-object requests) or an individual object (for single-object
+/// requests). If changes are made to a library in a write request, the
+/// library’s version number will be increased, any objects modified in the
+/// same request will be set to the new version number, and the new version
+/// number will be returned in the `last-modified-version` header.
+pub const LAST_MODIFIED_VERSION: HeaderName = HeaderName::from_static("last-modified-version");
+
+/// The
+/// [`if-unmodified-since-version`](https://www.zotero.org/support/dev/web_api/v3/syncing#if-unmodified-since-version)
+/// request header is used to ensure that existing data won’t be overwritten
+/// by a client with out-of-date data. All write requests that modify
+/// existing objects must include either the `if-unmodified-since-version`:
+/// <version> header or a #JSON version property for each object. If both
+/// are omitted, the API will return a `428 Precondition Required`.
+pub const IF_UNMODIFIED_SINCE_VERSION: HeaderName =
+    HeaderName::from_static("if-unmodified-since-version");
+
 pub trait ZoteroApiExecutor {
+    fn fetch_headers<I>(self, query: Option<I>) -> Result<HeaderMap, crate::ZoteroApiError>
+    where
+        I: IntoIterator<Item = HeaderName>;
+
+    fn fetch_header(
+        self,
+        header_name: HeaderName,
+    ) -> Result<Option<HeaderValue>, crate::ZoteroApiError>;
+
     fn execute<'a, T: Deserialize<'a>, Z: ZoteroApi<'a>>(
         self,
         zotero_api: &Z,
@@ -88,6 +130,15 @@ pub trait ZoteroApiExecutor {
 
 #[async_trait]
 pub trait ZoteroApiAsyncExecutor {
+    async fn fetch_headers<I>(self, query: Option<I>) -> Result<HeaderMap, crate::ZoteroApiError>
+    where
+        I: IntoIterator<Item = HeaderName> + Send;
+
+    async fn fetch_header(
+        self,
+        header_name: HeaderName,
+    ) -> Result<Option<HeaderValue>, crate::ZoteroApiError>;
+
     async fn execute<'a, T: Deserialize<'a>, Z: ZoteroApi<'a> + std::marker::Sync>(
         self,
         zotero_api: &Z,
