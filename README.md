@@ -2,6 +2,15 @@
     
 # Zotero
 
+> [!WARNING]
+>
+> This repository does not accept LLM contributions. Specifically, this means:
+>
+> 1. No LLM-generated code.
+> 2. No LLM-generated Issues, PRs, discussions, etc.
+>
+> This is of course Codeberg's policy, but more importantly it is the policy of this repo. 
+
 > [!NOTE]
 >
 > This is a fork of [Eonm/zotero on GitHub](https://github.com/Eonm/zotero). The canonical location
@@ -17,6 +26,7 @@
 > This repo is available under the terms of the original. Any issues should be filed in the
 > [codeberg repo](https://codeberg.org/coracoracora/zotero/issues), rather than at the GitHub mirror.
 
+**As of this writing, the remainder of this document is unchanged from the original [Eonm/zotero](https://github.com/Eonm.zotero) repo.**
 
 [![Build Status](https://travis-ci.org/Eonm/zotero.svg?branch=master)](https://travis-ci.org/Eonm/zotero)
 [![Coverage Status](https://coveralls.io/repos/github/Eonm/zotero/badge.svg?branch=master)](https://coveralls.io/github/Eonm/zotero?branch=master)
