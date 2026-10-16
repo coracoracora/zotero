@@ -2,6 +2,22 @@
     
 # Zotero
 
+> [!NOTE]
+>
+> This is a fork of [Eonm/zotero on GitHub](https://github.com/Eonm/zotero). The canonical location
+> for the fork is [coracoracora/zotero on Codeberg](https://codeberg.org/coracoracora/zotero), which
+> is in turn mirrored to [coracoracora/zotero on Github](https://github.com/coracoracora/zotero). As of
+> this writing, this fork is _not_ published to any public crates repository.
+>
+> This fork contains a number of additional features beyond the original repo, including new fields
+> in Zotero items, new item types, additional diagnostics, and more complete implementation of the
+> Zotero sync API (v3). The intent is to use the original repo as a starting point, but not to enforce
+> backward compatibility with the original repo, and as of this writing, there are API divergences.
+>
+> This repo is available under the terms of the original. Any issues should be filed in the
+> [codeberg repo](https://codeberg.org/coracoracora/zotero/issues), rather than at the GitHub mirror.
+
+
 [![Build Status](https://travis-ci.org/Eonm/zotero.svg?branch=master)](https://travis-ci.org/Eonm/zotero)
 [![Coverage Status](https://coveralls.io/repos/github/Eonm/zotero/badge.svg?branch=master)](https://coveralls.io/github/Eonm/zotero?branch=master)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
